@@ -1,4 +1,5 @@
 #include "../include/SDL_Handler.hpp"
+#include <SDL2/SDL_render.h>
 #include <iostream>
 
 bool SDL_Handler::init() {
@@ -45,7 +46,7 @@ bool SDL_Handler::init() {
 
 void SDL_Handler::SDL_cleanup() {
   SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindowSurface(window);
+  SDL_FreeSurface(surfaceScreen);
   SDL_DestroyWindow(window);
 
   SDL_FreeSurface(surfaceScreen);
@@ -57,12 +58,7 @@ SDL_Texture *SDL_Handler::loadImageFromFile(std::string path) {
   return SDL_CreateTextureFromSurface(renderer, IMG_Load(path.c_str()));
 }
 
-void SDL_Handler::renderChessboard() {
-
-  if (surfaceScreen == nullptr) {
-    std::cout << "surfaceScreen was a nullptr" << SDL_GetError() << '\n';
-    return;
-  }
+void SDL_Handler::renderChessboard(Game *game) {
 
   int windowWidth, windowHeight;
   SDL_GetWindowSize(window, &windowWidth, &windowHeight);
@@ -80,59 +76,66 @@ void SDL_Handler::renderChessboard() {
   SDL_RenderCopy(renderer, textureScreen, NULL, &destRect);
 
   for (int i = 0; i < 64; i++) {
-    switch (board[i]) {
-    case 'r':
-      renderPiece(i % 8, i / 8, "BlackRook.png");
-      break;
-    case 'n':
-      renderPiece(i % 8, i / 8, "BlackKnight.png");
-      break;
-    case 'b':
-      renderPiece(i % 8, i / 8, "BlackBishop.png");
-      break;
-    case 'q':
-      renderPiece(i % 8, i / 8, "BlackQueen.png");
-      break;
-    case 'k':
-      renderPiece(i % 8, i / 8, "BlackKing.png");
-      break;
-    case 'p':
-      renderPiece(i % 8, i / 8, "BlackPawn.png");
-      break;
-    case 'R':
-      renderPiece(i % 8, i / 8, "WhiteRook.png");
-      break;
-    case 'N':
-      renderPiece(i % 8, i / 8, "WhiteKnight.png");
-      break;
-    case 'B':
-      renderPiece(i % 8, i / 8, "WhiteBishop.png");
-      break;
-    case 'Q':
-      renderPiece(i % 8, i / 8, "WhiteQueen.png");
-      break;
-    case 'K':
-      renderPiece(i % 8, i / 8, "WhiteKing.png");
-      break;
-    case 'P':
-      renderPiece(i % 8, i / 8, "WhitePawn.png");
-      break;
-    default:
-      break;
-    }
+    renderPiece(i % 8, i / 8, game);
   }
 
   SDL_RenderPresent(renderer);
-
   SDL_DestroyTexture(textureScreen);
 }
 
-void SDL_Handler::renderPiece(int x, int y, std::string path) {
+void SDL_Handler::renderPiece(int x, int y, Game *game) {
 
-  if (path.size() < 2)
+  if (game->pieceSelected) {
+    undoPieceRender(game->selectedX, game->selectedY);
+    game->pieceSelected = false;
+  }
+
+  std::string image_path = "";
+  switch (game->getPiece(x, y)) {
+  case 'r':
+    image_path = "BlackRook.png";
+    break;
+  case 'n':
+    image_path = "BlackKnight.png";
+    break;
+  case 'b':
+    image_path = "BlackBishop.png";
+    break;
+  case 'q':
+    image_path = "BlackQueen.png";
+    break;
+  case 'k':
+    image_path = "BlackKing.png";
+    break;
+  case 'p':
+    image_path = "BlackPawn.png";
+    break;
+  case 'R':
+    image_path = "WhiteRook.png";
+    break;
+  case 'N':
+    image_path = "WhiteKnight.png";
+    break;
+  case 'B':
+    image_path = "WhiteBishop.png";
+    break;
+  case 'Q':
+    image_path = "WhiteQueen.png";
+    break;
+  case 'K':
+    image_path = "WhiteKing.png";
+    break;
+  case 'P':
+    image_path = "WhitePawn.png";
+    break;
+  default:
+    break;
+  }
+
+  if (image_path.size() < 2)
     return;
 
-  SDL_Texture *texturePiece = loadImageFromFile(path);
+  SDL_Texture *texturePiece = loadImageFromFile(image_path);
   SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, 100, 100};
   SDL_RenderCopy(renderer, texturePiece, NULL, &destRect);
 
@@ -148,6 +151,20 @@ void SDL_Handler::undoPieceRender(int x, int y) {
     SDL_SetRenderDrawColor(renderer, 209, 139, 71, 255);
   else
     SDL_SetRenderDrawColor(renderer, 255, 206, 158, 255);
+
+  SDL_RenderFillRect(renderer, &destRect);
+  SDL_RenderPresent(renderer);
+}
+
+void SDL_Handler::selectPieceGraphics(int x, int y) {
+  undoPieceRender(x, y);
+
+  SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, 100, 100};
+
+  if ((x + y) % 2)
+    SDL_SetRenderDrawColor(renderer, 3, 169, 252, 50);
+  else
+    SDL_SetRenderDrawColor(renderer, 3, 169, 252, 120);
 
   SDL_RenderFillRect(renderer, &destRect);
   SDL_RenderPresent(renderer);

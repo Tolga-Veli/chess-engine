@@ -1,46 +1,50 @@
-#include "Game.hpp"
-
+#include "../include/Game.hpp"
 void Game::init() {
+  convertFEN();
+  for (int i = 0; i < 12; i++) {
+    bitboard_piece[i] = 0ULL;
+  }
+
   // 0-white pawns, 1-black pawns, 2-white rooks, 3-black rooks, 4-white
   // knights, 5-black knights, 6-white bishops, 7-black bishops, 8-white queens,
   // 9-black queens, 10-white king, 11-black king
   for (int i = 0; i < 64; i++) {
     switch (board[i]) {
-    case 'r':
-      setoneBitAtPos(bitboard_piece[3], i);
-      break;
-    case 'n':
-      setoneBitAtPos(bitboard_piece[5], i);
-      break;
-    case 'b':
-      setoneBitAtPos(bitboard_piece[7], i);
-      break;
-    case 'q':
-      setoneBitAtPos(bitboard_piece[9], i);
-      break;
-    case 'k':
-      setoneBitAtPos(bitboard_piece[11], i);
+    case 'P':
+      setoneBitAtPos(0, i);
       break;
     case 'p':
-      setoneBitAtPos(bitboard_piece[1], i);
+      setoneBitAtPos(1, i);
       break;
     case 'R':
-      setoneBitAtPos(bitboard_piece[2], i);
+      setoneBitAtPos(2, i);
+      break;
+    case 'r':
+      setoneBitAtPos(3, i);
       break;
     case 'N':
-      setoneBitAtPos(bitboard_piece[4], i);
+      setoneBitAtPos(4, i);
+      break;
+    case 'n':
+      setoneBitAtPos(5, i);
       break;
     case 'B':
-      setoneBitAtPos(bitboard_piece[6], i);
+      setoneBitAtPos(6, i);
+      break;
+    case 'b':
+      setoneBitAtPos(7, i);
       break;
     case 'Q':
-      setoneBitAtPos(bitboard_piece[8], i);
+      setoneBitAtPos(8, i);
+      break;
+    case 'q':
+      setoneBitAtPos(9, i);
       break;
     case 'K':
-      setoneBitAtPos(bitboard_piece[10], i);
+      setoneBitAtPos(10, i);
       break;
-    case 'P':
-      setoneBitAtPos(bitboard_piece[0], i);
+    case 'k':
+      setoneBitAtPos(11, i);
       break;
     default:
       break;
@@ -48,22 +52,65 @@ void Game::init() {
   }
 }
 
-void Game::setzeroBitAtPos(unsigned long long bitboard, int index) {
-  bitboard_piece[bitboard] ^= (unsigned long long)1 << index;
+void Game::setzeroBitAtPos(int bitboardIndex, int index) {
+  bitboard_piece[bitboardIndex] &= ~(1ULL << index);
 }
 
-void Game::setoneBitAtPos(unsigned long long bitboard, int index) {
-  bitboard_piece[bitboard] = bitboard | (unsigned long long)1 << index;
+void Game::setoneBitAtPos(int bitboardIndex, int index) {
+  bitboard_piece[bitboardIndex] |= (1ULL << index);
 }
 
-bool Game::checkBitAtPos(unsigned long long bitboard, int index) {
-  unsigned long long mask = 1ULL << index;
+bool Game::checkBitAtPos(int bitboardIndex, int index) {
+  ull mask = 1ULL << index;
 
   // Perform bitwise AND operation with the mask
   // If the result is non-zero, the bit at bitIndex is set
-  return (bitboard & mask) != 0;
+  return (bitboard_piece[bitboardIndex] & mask) != 0;
 }
 
-Game::Game() { init(); }
+char Game::getPiece(int x, int y) {
+  for (int i = 0; i < 12; i++) {
+    if (checkBitAtPos(i, y * 8 + x)) {
+      switch (i) {
+      case 0:
+        return 'P';
+      case 1:
+        return 'p';
+      case 2:
+        return 'R';
+      case 3:
+        return 'r';
+      case 4:
+        return 'N';
+      case 5:
+        return 'n';
+      case 6:
+        return 'B';
+      case 7:
+        return 'b';
+      case 8:
+        return 'Q';
+      case 9:
+        return 'q';
+      case 10:
+        return 'K';
+      case 11:
+        return 'k';
+      }
+    }
+  }
 
-Game::~Game() {}
+  return '.';
+}
+
+bool Game::selectPiece(int x, int y) {
+
+  if (getPiece(x, y) != '.') {
+    selectedX = x;
+    selectedY = y;
+    return true;
+  }
+
+  return false;
+}
+Game::Game() { init(); }

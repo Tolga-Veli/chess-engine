@@ -1,20 +1,25 @@
 #pragma once
 #include "fen.hpp"
+#define ull unsigned long long
 
 class Game : FEN {
 private:
-public:
   // 0-white pawns, 1-black pawns, 2-white rooks, 3-black rooks, 4-white
   // knights, 5-black knights, 6-white bishops, 7-black bishops, 8-white queens,
   // 9-black queens, 10-white king, 11-black king
-  unsigned long long bitboard_piece[12];
+  ull bitboard_piece[12];
+
+  bool checkBitAtPos(int bitboardIndex, int index);
+  void setzeroBitAtPos(int bitboardIndex, int index);
+  void setoneBitAtPos(int bitboardIndex, int index);
+
+public:
+  int selectedX = 0, selectedY = 0;
+  bool pieceSelected = false;
 
   void init();
-
-  bool checkBitAtPos(unsigned long long bitboard, int index);
-  void setzeroBitAtPos(unsigned long long bitboard, int index);
-  void setoneBitAtPos(unsigned long long bitboard, int index);
+  char getPiece(int x, int y);
+  bool selectPiece(int x, int y);
 
   Game();
-  ~Game();
 };

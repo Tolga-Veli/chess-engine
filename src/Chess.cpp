@@ -6,9 +6,8 @@ void Chess::run() {
   Game *game = new Game();
 
   bool quit = false;
-  std::string path = "";
 
-  handler.renderChessboard();
+  handler.renderChessboard(game);
 
   while (!quit) {
     while (SDL_PollEvent(&handler.event)) {
@@ -17,10 +16,9 @@ void Chess::run() {
         quit = true;
         break;
       case SDL_MOUSEBUTTONDOWN:
-        path = handleMouseDown(handler, game);
+        handleMouseDown(handler, game);
         break;
-      case SDL_MOUSEBUTTONUP:
-        handleMouseUp(handler, game);
+      default:
         break;
       }
     }
@@ -30,22 +28,16 @@ void Chess::run() {
   delete game;
 }
 
-std::string Chess::handleMouseDown(SDL_Handler &handler, Game *&game) {
-
+void Chess::handleMouseDown(SDL_Handler &handler, Game *game) {
   int x = handler.event.button.x / handler.CELL_WIDTH;
   int y = handler.event.button.y / handler.CELL_WIDTH;
 
-  handler.undoPieceRender(x, y);
-
-    int clicked_Cell = (y * 😎 + x % 8;
-    for (unsigned long long bitboard : game->bitboard_piece) {
-    if (game->checkBitAtPos(bitboard, clicked_Cell)) {
+  if (game->selectPiece(x, y)) {
+    if (!game->pieceSelected) {
+      handler.selectPieceGraphics(x, y);
+      game->pieceSelected = true;
+    } else {
+      handler.renderPiece(x, y, game);
     }
-    }
-}
-
-void Chess::handleMouseUp(SDL_Handler &handler, Game *&game) {
-
-  int x = handler.event.button.x / handler.CELL_WIDTH;
-  int y = handler.event.button.y / handler.CELL_WIDTH;
+  }
 }

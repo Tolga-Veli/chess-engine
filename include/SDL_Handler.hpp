@@ -3,7 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 
-#include "fen.hpp"
+#include "Game.hpp"
 
 class SDL_Handler : FEN {
 public:
@@ -21,7 +21,8 @@ public:
   bool init();
   void SDL_cleanup();
   SDL_Texture *loadImageFromFile(std::string path);
-  void renderChessboard();
-  void renderPiece(int x, int y, std::string path);
+  void renderChessboard(Game *game);
+  void renderPiece(int x, int y, Game *game);
   void undoPieceRender(int x, int y);
+  void selectPieceGraphics(int x, int y);
 };
