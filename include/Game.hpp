@@ -1,25 +1,24 @@
 #pragma once
 #include "fen.hpp"
+#include <map>
+
 #define ull unsigned long long
 
 class Game : FEN {
 private:
-  // 0-white pawns, 1-black pawns, 2-white rooks, 3-black rooks, 4-white
-  // knights, 5-black knights, 6-white bishops, 7-black bishops, 8-white queens,
-  // 9-black queens, 10-white king, 11-black king
-  ull bitboard_piece[12];
+  std::map<std::string, ull> bitboards;
 
-  bool checkBitAtPos(int bitboardIndex, int index);
-  void setzeroBitAtPos(int bitboardIndex, int index);
-  void setoneBitAtPos(int bitboardIndex, int index);
+  bool checkBitAtPos(std::string board, int index);
+  void reverseBitAtPos(std::string board, int index);
+  void setzeroBitAtPos(std::string board, int index);
+  void setoneBitAtPos(std::string board, int index);
 
 public:
   int selectedX = 0, selectedY = 0;
-  bool pieceSelected = false;
 
   void init();
-  char getPiece(int x, int y);
-  bool selectPiece(int x, int y);
+  std::string getPiece(int x, int y);
+  void changePiece(int x, int y);
 
   Game();
 };

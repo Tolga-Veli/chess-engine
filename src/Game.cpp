@@ -1,50 +1,87 @@
+#include <utility>
+
 #include "../include/Game.hpp"
+
+bool Game::checkBitAtPos(std::string board, int index) {
+  return (bitboards[board] & (1ULL << index)) != 0;
+}
+
+void Game::reverseBitAtPos(std::string board, int index) {
+  bitboards[board] ^= (1 << index);
+}
+
+void Game::setzeroBitAtPos(std::string board, int index) {
+  bitboards[board] &= ~(1ULL << index);
+}
+
+void Game::setoneBitAtPos(std::string board, int index) {
+  bitboards[board] |= (1ULL << index);
+}
+
+std::string Game::getPiece(int x, int y) {
+  for (std::pair<std::string, ull> name_bitboard : bitboards) {
+    if (checkBitAtPos(name_bitboard.first, y * 8 + x))
+      return name_bitboard.first;
+  }
+  return ".";
+}
+
+void Game::changePiece(int x, int y) {
+  reverseBitAtPos(getPiece(x, y) + ".png", y * 8 + x);
+}
+
 void Game::init() {
   convertFEN();
-  for (int i = 0; i < 12; i++) {
-    bitboard_piece[i] = 0ULL;
-  }
+  bitboards["WhitePawns"] = 0ULL;
+  bitboards["BlackPawns"] = 0ULL;
+  bitboards["WhiteRooks"] = 0ULL;
+  bitboards["BlackRooks"] = 0ULL;
+  bitboards["WhiteKnights"] = 0ULL;
+  bitboards["BlackKnights"] = 0ULL;
+  bitboards["WhiteBishops"] = 0ULL;
+  bitboards["BlackBishops"] = 0ULL;
+  bitboards["WhiteQueens"] = 0ULL;
+  bitboards["BlackQueens"] = 0ULL;
+  bitboards["WhiteKing"] = 0ULL;
+  bitboards["BlackKing"] = 0ULL;
 
-  // 0-white pawns, 1-black pawns, 2-white rooks, 3-black rooks, 4-white
-  // knights, 5-black knights, 6-white bishops, 7-black bishops, 8-white queens,
-  // 9-black queens, 10-white king, 11-black king
   for (int i = 0; i < 64; i++) {
     switch (board[i]) {
     case 'P':
-      setoneBitAtPos(0, i);
+      setoneBitAtPos("WhitePawns", i);
       break;
     case 'p':
-      setoneBitAtPos(1, i);
+      setoneBitAtPos("BlackPawns", i);
       break;
     case 'R':
-      setoneBitAtPos(2, i);
+      setoneBitAtPos("WhiteRooks", i);
       break;
     case 'r':
-      setoneBitAtPos(3, i);
+      setoneBitAtPos("BlackRooks", i);
       break;
     case 'N':
-      setoneBitAtPos(4, i);
+      setoneBitAtPos("WhiteKnights", i);
       break;
     case 'n':
-      setoneBitAtPos(5, i);
+      setoneBitAtPos("BlackKnights", i);
       break;
     case 'B':
-      setoneBitAtPos(6, i);
+      setoneBitAtPos("WhiteBishops", i);
       break;
     case 'b':
-      setoneBitAtPos(7, i);
+      setoneBitAtPos("BlackBishops", i);
       break;
     case 'Q':
-      setoneBitAtPos(8, i);
+      setoneBitAtPos("WhiteQueens", i);
       break;
     case 'q':
-      setoneBitAtPos(9, i);
+      setoneBitAtPos("BlackQueens", i);
       break;
     case 'K':
-      setoneBitAtPos(10, i);
+      setoneBitAtPos("WhiteKing", i);
       break;
     case 'k':
-      setoneBitAtPos(11, i);
+      setoneBitAtPos("BlackKing", i);
       break;
     default:
       break;
@@ -52,65 +89,4 @@ void Game::init() {
   }
 }
 
-void Game::setzeroBitAtPos(int bitboardIndex, int index) {
-  bitboard_piece[bitboardIndex] &= ~(1ULL << index);
-}
-
-void Game::setoneBitAtPos(int bitboardIndex, int index) {
-  bitboard_piece[bitboardIndex] |= (1ULL << index);
-}
-
-bool Game::checkBitAtPos(int bitboardIndex, int index) {
-  ull mask = 1ULL << index;
-
-  // Perform bitwise AND operation with the mask
-  // If the result is non-zero, the bit at bitIndex is set
-  return (bitboard_piece[bitboardIndex] & mask) != 0;
-}
-
-char Game::getPiece(int x, int y) {
-  for (int i = 0; i < 12; i++) {
-    if (checkBitAtPos(i, y * 8 + x)) {
-      switch (i) {
-      case 0:
-        return 'P';
-      case 1:
-        return 'p';
-      case 2:
-        return 'R';
-      case 3:
-        return 'r';
-      case 4:
-        return 'N';
-      case 5:
-        return 'n';
-      case 6:
-        return 'B';
-      case 7:
-        return 'b';
-      case 8:
-        return 'Q';
-      case 9:
-        return 'q';
-      case 10:
-        return 'K';
-      case 11:
-        return 'k';
-      }
-    }
-  }
-
-  return '.';
-}
-
-bool Game::selectPiece(int x, int y) {
-
-  if (getPiece(x, y) != '.') {
-    selectedX = x;
-    selectedY = y;
-    return true;
-  }
-
-  return false;
-}
 Game::Game() { init(); }

@@ -83,54 +83,37 @@ void SDL_Handler::renderChessboard(Game *game) {
   SDL_DestroyTexture(textureScreen);
 }
 
+void SDL_Handler::selectPiece(int x, int y, Game *game) {
+  if (game->selectedX == -1 || game->selectedY == -1)
+    return;
+
+  game->selectedX = x;
+  game->selectedY = y;
+
+  SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, 100, 100};
+  SDL_SetRenderDrawColor(renderer, 96, 96, 96, 50);
+  SDL_RenderFillRect(renderer, &destRect);
+  SDL_RenderPresent(renderer);
+}
+
+void SDL_Handler::movePiece(int x, int y, Game *game) {
+  undoPiece(game->selectedX, game->selectedY, game);
+  undoPiece(x, y, game);
+  renderPiece(x, y, game);
+
+  game->selectedX = -1;
+  game->selectedY = -1;
+}
+
 void SDL_Handler::renderPiece(int x, int y, Game *game) {
-
-  if (game->pieceSelected) {
-    undoPieceRender(game->selectedX, game->selectedY);
-    game->pieceSelected = false;
-  }
-
   std::string image_path = "";
-  switch (game->getPiece(x, y)) {
-  case 'r':
-    image_path = "BlackRook.png";
-    break;
-  case 'n':
-    image_path = "BlackKnight.png";
-    break;
-  case 'b':
-    image_path = "BlackBishop.png";
-    break;
-  case 'q':
-    image_path = "BlackQueen.png";
-    break;
-  case 'k':
-    image_path = "BlackKing.png";
-    break;
-  case 'p':
-    image_path = "BlackPawn.png";
-    break;
-  case 'R':
-    image_path = "WhiteRook.png";
-    break;
-  case 'N':
-    image_path = "WhiteKnight.png";
-    break;
-  case 'B':
-    image_path = "WhiteBishop.png";
-    break;
-  case 'Q':
-    image_path = "WhiteQueen.png";
-    break;
-  case 'K':
-    image_path = "WhiteKing.png";
-    break;
-  case 'P':
-    image_path = "WhitePawn.png";
-    break;
-  default:
-    break;
-  }
+  std::string chess_piece = "";
+
+  chess_piece = game->getPiece(x, y);
+  if (chess_piece != ".")
+    image_path = chess_piece + ".png";
+  else
+    return;
 
   if (image_path.size() < 2)
     return;
@@ -144,27 +127,16 @@ void SDL_Handler::renderPiece(int x, int y, Game *game) {
   SDL_DestroyTexture(texturePiece);
 }
 
-void SDL_Handler::undoPieceRender(int x, int y) {
+void SDL_Handler::undoPiece(int x, int y, Game *game) {
+
+  game->changePiece(x, y);
+
   SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, 100, 100};
 
   if ((x + y) % 2)
     SDL_SetRenderDrawColor(renderer, 209, 139, 71, 255);
   else
     SDL_SetRenderDrawColor(renderer, 255, 206, 158, 255);
-
-  SDL_RenderFillRect(renderer, &destRect);
-  SDL_RenderPresent(renderer);
-}
-
-void SDL_Handler::selectPieceGraphics(int x, int y) {
-  undoPieceRender(x, y);
-
-  SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, 100, 100};
-
-  if ((x + y) % 2)
-    SDL_SetRenderDrawColor(renderer, 3, 169, 252, 50);
-  else
-    SDL_SetRenderDrawColor(renderer, 3, 169, 252, 120);
 
   SDL_RenderFillRect(renderer, &destRect);
   SDL_RenderPresent(renderer);

@@ -21,8 +21,11 @@ public:
   bool init();
   void SDL_cleanup();
   SDL_Texture *loadImageFromFile(std::string path);
+
   void renderChessboard(Game *game);
   void renderPiece(int x, int y, Game *game);
-  void undoPieceRender(int x, int y);
-  void selectPieceGraphics(int x, int y);
+  void undoPiece(int x, int y, Game *game);
+
+  void selectPiece(int x, int y, Game *game);
+  void movePiece(int x, int y, Game *game);
 };

@@ -32,12 +32,8 @@ void Chess::handleMouseDown(SDL_Handler &handler, Game *game) {
   int x = handler.event.button.x / handler.CELL_WIDTH;
   int y = handler.event.button.y / handler.CELL_WIDTH;
 
-  if (game->selectPiece(x, y)) {
-    if (!game->pieceSelected) {
-      handler.selectPieceGraphics(x, y);
-      game->pieceSelected = true;
-    } else {
-      handler.renderPiece(x, y, game);
-    }
-  }
+  if (game->selectedX == -1)
+    handler.selectPiece(x, y, game);
+  else
+    handler.movePiece(x, y, game);
 }

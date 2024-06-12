@@ -4,6 +4,6 @@
 #include "SDL_Handler.hpp"
 
 namespace Chess {
-static void run();
-static void handleMouseDown(SDL_Handler &handler, Game *game);
+void run();
+void handleMouseDown(SDL_Handler &handler, Game *game);
 } // namespace Chess
