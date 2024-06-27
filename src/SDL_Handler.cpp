@@ -49,7 +49,6 @@ void SDL_Handler::SDL_cleanup() {
   SDL_FreeSurface(surfaceScreen);
   SDL_DestroyWindow(window);
 
-  SDL_FreeSurface(surfaceScreen);
   IMG_Quit();
   SDL_Quit();
 }
