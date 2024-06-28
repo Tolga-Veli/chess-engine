@@ -16,9 +16,9 @@ private:
 public:
   int selectedX = 0, selectedY = 0;
 
-  void init();
+  Game();
+  ~Game();
+
   std::string getPiece(int x, int y);
   void changePiece(int x, int y);
-
-  Game();
 };

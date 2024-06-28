@@ -30,7 +30,8 @@ void Game::changePiece(int x, int y) {
   reverseBitAtPos(getPiece(x, y) + ".png", y * 8 + x);
 }
 
-void Game::init() {
+Game::Game() {
+
   convertFEN();
   bitboards["WhitePawns"] = 0ULL;
   bitboards["BlackPawns"] = 0ULL;
@@ -88,5 +89,3 @@ void Game::init() {
     }
   }
 }
-
-Game::Game() { init(); }
