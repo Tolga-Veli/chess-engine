@@ -3,6 +3,7 @@
 void FEN::convertFEN() {
   enPassant = -1;
   whiteTurn = false;
+
   for (int i = 0; i < 4; i++)
     castle[i] = false;
   for (int i = 0; i < 64; i++)
@@ -70,6 +71,7 @@ void FEN::convertFEN() {
     enPassant = -1;
     break;
   }
+
   if (enPassant > 0)
     enPassant -= 8 * ((input[cutoff + 2] - '0') - 1);
 }

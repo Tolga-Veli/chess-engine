@@ -8,7 +8,6 @@ private:
 
 public:
   // Capital letters - white, small letters - black
-
   char board[64];
   // K-0, Q-1, k-2, q-3
   bool castle[4];
