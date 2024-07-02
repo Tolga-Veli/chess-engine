@@ -1,9 +1,10 @@
 #include "../include/Chess.hpp"
+#include <iostream>
 
 void Chess::run() {
   SDL_Handler handler;
   handler.renderChessboard();
-  std::unique_ptr<Game> game = std::make_unique<Game>(&handler);
+  Game *game = new Game(&handler);
   bool quit = false;
 
   while (!quit) {
@@ -27,8 +28,6 @@ void Chess::handleMouseDown(SDL_Handler &handler, std::unique_ptr<Game> game) {
   int x = handler.event.button.x / handler.CELL_WIDTH;
   int y = handler.event.button.y / handler.CELL_WIDTH;
 
-  if (game->selectedX == -1)
-    handler.selectPiece(x, y, game);
-  else
-    handler.movePiece(x, y, game);
+  std::cout << x + y << " ";
+  std::cout << '\n';
 }

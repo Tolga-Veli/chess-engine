@@ -5,7 +5,7 @@
 
 #include "fen.hpp"
 
-class SDL_Handler : FEN {
+class SDL_Handler : public FEN {
 private:
   SDL_Window *mWindow;
   SDL_Renderer *mRenderer;
