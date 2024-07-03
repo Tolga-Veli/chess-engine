@@ -15,6 +15,7 @@ private:
   void SDL_cleanup();
   SDL_Texture *loadTextureFromFile(std::string path);
 
+  void renderGame();
   void renderPiece(int x, int y);
   void undoPiece(int x, int y);
 

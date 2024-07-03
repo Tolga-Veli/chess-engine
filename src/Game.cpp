@@ -1,5 +1,7 @@
 #include "../include/Game.hpp"
 
+#include <iostream>
+
 bool Game::checkBitAtPos(int boardIndex, int boardPos) {
   return (bitboards[boardIndex] & (1ULL << boardPos)) != 0;
 }
@@ -16,7 +18,7 @@ void Game::setoneBitAtPos(int boardIndex, int boardPos) {
   bitboards[boardIndex] |= (1ULL << boardPos);
 }
 
-Game::Game(SDL_Handler &handler) {
+Game::Game() {
   // white: pawn-0, knight-1, bishop-2, rook-3, queen-4, king-5
   // black: pawn-6, knight-7, bishop-8, rook-9, queen-10, king-11
   convertFEN();
@@ -64,3 +66,5 @@ Game::Game(SDL_Handler &handler) {
     }
   }
 }
+
+Game::~Game() { std::cout << "ptr destroyed \n"; }

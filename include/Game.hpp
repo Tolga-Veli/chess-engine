@@ -15,6 +15,6 @@ private:
   void setoneBitAtPos(int boardIndex, int boardPos);
 
 public:
-  Game(SDL_Handler &handler);
+  Game();
   ~Game();
 };

@@ -53,7 +53,7 @@ void SDL_Handler::renderChessboard() {
   SDL_DestroyTexture(backgroundTexture);
 }
 
-void SDL_Handler::renderGame(Game *game) {
+void SDL_Handler::renderGame() {
 
   SDL_Rect destRect = {0, 0, CELL_WIDTH, CELL_WIDTH};
   SDL_RenderPresent(mRenderer);

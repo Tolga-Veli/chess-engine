@@ -4,7 +4,7 @@
 void Chess::run() {
   SDL_Handler handler;
   handler.renderChessboard();
-  Game *game = new Game(&handler);
+  std::unique_ptr<Game> game = std::make_unique<Game>();
   bool quit = false;
 
   while (!quit) {
@@ -24,10 +24,7 @@ void Chess::run() {
   }
 }
 
-void Chess::handleMouseDown(SDL_Handler &handler, std::unique_ptr<Game> game) {
+void Chess::handleMouseDown(SDL_Handler &handler, std::unique_ptr<Game> &game) {
   int x = handler.event.button.x / handler.CELL_WIDTH;
   int y = handler.event.button.y / handler.CELL_WIDTH;
-
-  std::cout << x + y << " ";
-  std::cout << '\n';
 }
