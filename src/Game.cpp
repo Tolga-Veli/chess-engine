@@ -1,65 +1,75 @@
 #include "../include/Game.hpp"
 
-#include <iostream>
-
-bool Game::checkBitAtPos(int boardIndex, int boardPos) {
-  return (bitboards[boardIndex] & (1ULL << boardPos)) != 0;
+bool Game::checkBitAtPos(const std::string name, int boardPos) {
+  return (bitboards[name] & (1ULL << boardPos)) != 0;
 }
 
-void Game::reverseBitAtPos(int boardIndex, int boardPos) {
-  bitboards[boardIndex] ^= (1 << boardPos);
+void Game::reverseBitAtPos(const std::string name, int boardPos) {
+  bitboards[name] ^= (1ULL << boardPos);
 }
 
-void Game::setzeroBitAtPos(int boardIndex, int boardPos) {
-  bitboards[boardIndex] &= ~(1ULL << boardPos);
+void Game::setzeroBitAtPos(const std::string name, int boardPos) {
+  bitboards[name] &= ~(1ULL << boardPos);
 }
 
-void Game::setoneBitAtPos(int boardIndex, int boardPos) {
-  bitboards[boardIndex] |= (1ULL << boardPos);
+void Game::setoneBitAtPos(const std::string name, int boardPos) {
+  bitboards[name] |= (1ULL << boardPos);
 }
 
 Game::Game() {
-  // white: pawn-0, knight-1, bishop-2, rook-3, queen-4, king-5
-  // black: pawn-6, knight-7, bishop-8, rook-9, queen-10, king-11
+
+  // Initialize bitboards
+  bitboards["WhitePawn"] = 0;
+  bitboards["WhiteKnight"] = 0;
+  bitboards["WhiteBishop"] = 0;
+  bitboards["WhiteRook"] = 0;
+  bitboards["WhiteQueen"] = 0;
+  bitboards["WhiteKing"] = 0;
+  bitboards["BlackPawn"] = 0;
+  bitboards["BlackKnight"] = 0;
+  bitboards["BlackBishop"] = 0;
+  bitboards["BlackRook"] = 0;
+  bitboards["BlackQueen"] = 0;
+  bitboards["BlackKing"] = 0;
   convertFEN();
 
   for (int i = 0; i < 64; i++) {
     switch (board[i]) {
     case 'P':
-      setoneBitAtPos(0, i);
+      setoneBitAtPos("WhitePawn", i);
       break;
     case 'p':
-      setoneBitAtPos(6, i);
+      setoneBitAtPos("BlackPawn", i);
       break;
     case 'R':
-      setoneBitAtPos(3, i);
+      setoneBitAtPos("WhiteRook", i);
       break;
     case 'r':
-      setoneBitAtPos(9, i);
+      setoneBitAtPos("BlackRook", i);
       break;
     case 'N':
-      setoneBitAtPos(1, i);
+      setoneBitAtPos("WhiteKnight", i);
       break;
     case 'n':
-      setoneBitAtPos(7, i);
+      setoneBitAtPos("BlackKnight", i);
       break;
     case 'B':
-      setoneBitAtPos(2, i);
+      setoneBitAtPos("WhiteBishop", i);
       break;
     case 'b':
-      setoneBitAtPos(8, i);
+      setoneBitAtPos("BlackBishop", i);
       break;
     case 'Q':
-      setoneBitAtPos(4, i);
+      setoneBitAtPos("WhiteQueen", i);
       break;
     case 'q':
-      setoneBitAtPos(10, i);
+      setoneBitAtPos("BlackQueen", i);
       break;
     case 'K':
-      setoneBitAtPos(5, i);
+      setoneBitAtPos("WhiteKing", i);
       break;
     case 'k':
-      setoneBitAtPos(11, i);
+      setoneBitAtPos("BlackKing", i);
       break;
     default:
       break;
@@ -67,4 +77,13 @@ Game::Game() {
   }
 }
 
-Game::~Game() { std::cout << "ptr destroyed \n"; }
+void Game::renderGame(SDL_Handler &handler) {
+  for (std::pair<std::string, ull> bitboard : bitboards) {
+    for (int i = 0; i < 64; i++) {
+      if (checkBitAtPos(bitboard.first, i))
+        handler.renderPiece(bitboard.first, i % 8, i / 8);
+    }
+  }
+}
+
+Game::~Game() {}

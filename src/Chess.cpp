@@ -20,6 +20,7 @@ void Chess::run() {
         break;
       }
     }
+    game->renderGame(handler);
     SDL_Delay(1000);
   }
 }
@@ -27,4 +28,7 @@ void Chess::run() {
 void Chess::handleMouseDown(SDL_Handler &handler, std::unique_ptr<Game> &game) {
   int x = handler.event.button.x / handler.CELL_WIDTH;
   int y = handler.event.button.y / handler.CELL_WIDTH;
+
+  if (x == y && x > 1000)
+    std::cout << "PleximusPrime ";
 }
