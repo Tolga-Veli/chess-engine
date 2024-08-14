@@ -1,7 +1,6 @@
 #pragma once
-#include "SDL_Handler.hpp"
-
 #include "Game.hpp"
+#include "SDL_Handler.hpp"
 #include <memory>
 
 namespace Chess {

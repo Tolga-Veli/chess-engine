@@ -1,23 +1,45 @@
 #pragma once
 #include "SDL_Handler.hpp"
-#include "fen.hpp"
+#include <unordered_map>
+#include <utility>
 #define ull unsigned long long
 
-class Game : public FEN {
+class Game {
 private:
-  // white: pawn-0, knight-1, bishop-2, rook-3, queen-4, king-5
-  // black: pawn-6, knight-7, bishop-8, rook-9, queen-10, king-11
+  SDL_Handler *m_handler;
 
-  std::map<std::string, ull> bitboards;
+  std::unordered_map<std::string, ull> bitboards;
+  ull white_bitboard;
+  ull black_bitboard;
+  ull allineone_bitboard;
 
-  bool checkBitAtPos(std::string name, int boardPos);
-  void reverseBitAtPos(std::string name, int boardPos);
-  void setzeroBitAtPos(std::string name, int boardPos);
-  void setoneBitAtPos(std::string name, int boardPos);
+  bool checkBitAtPos(const ull &bitboard, int boardPos) const;
+  void reverseBitAtPos(ull &bitboard, int boardPos);
+  void setzeroBitAtPos(ull &bitboard, int boardPos);
+  void setoneBitAtPos(ull &bitboard, int boardPos);
 
 public:
-  void renderGame(SDL_Handler &handler);
+  bool pieceSelected;
+  // K-0, Q-1, k-2, q-3
+  // 0 -> 7, 8 -> 15, -1 -> noEnPassant
+  bool castle[4];
+  int enPassant;
+  bool whiteTurn;
 
-  Game();
+  std::pair<std::string, int> selectedPiece;
+
+  Game(SDL_Handler &handler);
   ~Game();
+
+  void GameLoop();
+  void selectPiece(int index);
+  void movePiece(int index);
+  void highlightLegalMoves();
+
+  ull getLegalMoves();
+  ull getPawnMoves();
+  ull getKnightMoves();
+  ull getDiagonalMoves();
+  ull getRookMoves();
+  ull getKingMoves();
 };

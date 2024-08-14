@@ -1,10 +1,9 @@
 #include "../include/Chess.hpp"
-#include <iostream>
 
 void Chess::run() {
   SDL_Handler handler;
-  handler.renderChessboard();
-  std::unique_ptr<Game> game = std::make_unique<Game>();
+  std::unique_ptr<Game> game = std::make_unique<Game>(handler);
+
   bool quit = false;
 
   while (!quit) {
@@ -20,15 +19,17 @@ void Chess::run() {
         break;
       }
     }
-    game->renderGame(handler);
-    SDL_Delay(1000);
+    handler.presentRenderer();
+    SDL_Delay(500);
   }
 }
 
 void Chess::handleMouseDown(SDL_Handler &handler, std::unique_ptr<Game> &game) {
-  int x = handler.event.button.x / handler.CELL_WIDTH;
-  int y = handler.event.button.y / handler.CELL_WIDTH;
+  int x = handler.event.button.x / CELL_WIDTH;
+  int y = handler.event.button.y / CELL_WIDTH;
 
-  if (x == y && x > 1000)
-    std::cout << "PleximusPrime ";
+  if (game->pieceSelected)
+    game->movePiece(x % 8 + y * 8);
+  else
+    game->selectPiece(x % 8 + y * 8);
 }

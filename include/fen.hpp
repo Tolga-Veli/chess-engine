@@ -3,16 +3,17 @@
 
 class FEN {
 private:
-  std::string input =
+  const std::string input =
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  void convertFEN();
 
 public:
   // Capital letters - white, small letters - black
-  char board[64];
+  char f_board[64];
   // K-0, Q-1, k-2, q-3
-  bool castle[4];
-  int enPassant;
-  bool whiteTurn;
+  bool f_castle[4];
+  int f_enPassant;
+  bool f_whiteTurn;
 
-  void convertFEN();
+  FEN();
 };
