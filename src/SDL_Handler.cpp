@@ -13,33 +13,33 @@ bool SDL_Handler::init() {
     return false;
   }
 
-  mWindow =
+  m_window =
       SDL_CreateWindow("Chess", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-  mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_SOFTWARE);
+  m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
 
-  if (mWindow == nullptr) {
+  if (m_window == nullptr) {
     std::cerr << "Unable to create window: " << SDL_GetError() << '\n';
     return false;
   }
-  if (mRenderer == nullptr) {
+  if (m_renderer == nullptr) {
     std::cerr << "Unable to create renderer: " << SDL_GetError() << '\n';
     return false;
   }
 
-  textures["WhitePawn"] = loadTextureFromFile("WhitePawn.png");
-  textures["WhiteKnight"] = loadTextureFromFile("WhiteKnight.png");
-  textures["WhiteBishop"] = loadTextureFromFile("WhiteBishop.png");
-  textures["WhiteRook"] = loadTextureFromFile("WhiteRook.png");
-  textures["WhiteQueen"] = loadTextureFromFile("WhiteQueen.png");
-  textures["WhiteKing"] = loadTextureFromFile("WhiteKing.png");
+  textures[WhitePawn] = load_texture_from_file("WhitePawn.png");
+  textures[WhiteKnight] = load_texture_from_file("WhiteKnight.png");
+  textures[WhiteBishop] = load_texture_from_file("WhiteBishop.png");
+  textures[WhiteRook] = load_texture_from_file("WhiteRook.png");
+  textures[WhiteQueen] = load_texture_from_file("WhiteQueen.png");
+  textures[WhiteKing] = load_texture_from_file("WhiteKing.png");
 
-  textures["BlackPawn"] = loadTextureFromFile("BlackPawn.png");
-  textures["BlackKnight"] = loadTextureFromFile("BlackKnight.png");
-  textures["BlackBishop"] = loadTextureFromFile("BlackBishop.png");
-  textures["BlackRook"] = loadTextureFromFile("BlackRook.png");
-  textures["BlackQueen"] = loadTextureFromFile("BlackQueen.png");
-  textures["BlackKing"] = loadTextureFromFile("BlackKing.png");
+  textures[BlackPawn] = load_texture_from_file("BlackPawn.png");
+  textures[BlackKnight] = load_texture_from_file("BlackKnight.png");
+  textures[BlackBishop] = load_texture_from_file("BlackBishop.png");
+  textures[BlackRook] = load_texture_from_file("BlackRook.png");
+  textures[BlackQueen] = load_texture_from_file("BlackQueen.png");
+  textures[BlackKing] = load_texture_from_file("BlackKing.png");
 
   for (const auto &texture : textures) {
     if (texture.second == nullptr) {
@@ -49,7 +49,7 @@ bool SDL_Handler::init() {
     }
   }
 
-  renderChessboard();
+  render_chessboard();
   return true;
 }
 
@@ -58,31 +58,25 @@ void SDL_Handler::SDL_cleanup() {
     SDL_DestroyTexture(nameTexture.second);
   }
 
-  SDL_DestroyRenderer(mRenderer);
-  SDL_DestroyWindow(mWindow);
+  SDL_DestroyRenderer(m_renderer);
+  SDL_DestroyWindow(m_window);
 
   IMG_Quit();
   SDL_Quit();
 }
 
-SDL_Handler::SDL_Handler() {
-  if (!init()) {
-    SDL_cleanup();
-    return;
-  }
-  renderChessboard();
-}
+SDL_Handler::SDL_Handler() { failed = init(); }
 
 SDL_Handler::~SDL_Handler() { SDL_cleanup(); }
 
-SDL_Texture *SDL_Handler::loadTextureFromFile(const std::string &path) {
+SDL_Texture *SDL_Handler::load_texture_from_file(const std::string &path) {
   SDL_Surface *surface = IMG_Load(("../assets/" + path).c_str());
   if (surface == nullptr) {
     std::cerr << "Unable to load image " << path << ": " << IMG_GetError()
               << '\n';
     return nullptr;
   }
-  SDL_Texture *texture = SDL_CreateTextureFromSurface(mRenderer, surface);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
   SDL_FreeSurface(surface);
   if (texture == nullptr) {
     std::cerr << "Unable to create texture from " << path << ": "
@@ -92,23 +86,25 @@ SDL_Texture *SDL_Handler::loadTextureFromFile(const std::string &path) {
   return texture;
 }
 
-void SDL_Handler::renderChessboard() {
+void SDL_Handler::present_renderer() { SDL_RenderPresent(m_renderer); }
+
+void SDL_Handler::render_chessboard() {
   // Set the destination rectangle to cover the entire window
   SDL_Rect destRect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
 
   SDL_Texture *backgroundTexture =
-      loadTextureFromFile("../assets/chessboard.png");
+      load_texture_from_file("../assets/chessboard.png");
   if (backgroundTexture == nullptr) {
     std::cerr << "textureScreen was a nullptr" << SDL_GetError() << '\n';
     SDL_cleanup();
     return;
   }
 
-  SDL_RenderCopy(mRenderer, backgroundTexture, NULL, &destRect);
+  SDL_RenderCopy(m_renderer, backgroundTexture, NULL, &destRect);
   SDL_DestroyTexture(backgroundTexture);
 }
 
-void SDL_Handler::renderPiece(const std::string &name, int x, int y) {
+void SDL_Handler::render_piece(const bitboard_strings name, int x, int y) {
   SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH};
 
   if (textures[name] == nullptr) {
@@ -117,36 +113,34 @@ void SDL_Handler::renderPiece(const std::string &name, int x, int y) {
     return;
   }
 
-  SDL_RenderCopy(mRenderer, textures[name], NULL, &destRect);
+  SDL_RenderCopy(m_renderer, textures[name], NULL, &destRect);
 }
 
-void SDL_Handler::undoPiece(int x, int y) {
-  // To implement undoPiece functionality, you need to redraw the specific cell
+void SDL_Handler::undo_piece(int x, int y) {
+  // To implement undo_piece functionality, you need to redraw the specific cell
   // which was occupied by the piece. This might involve redrawing the cell
   // background and possibly other pieces.
   SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH};
   if ((x + y) % 2)
-    SDL_SetRenderDrawColor(mRenderer, 209, 139, 71, 255);
+    SDL_SetRenderDrawColor(m_renderer, 209, 139, 71, 255);
   else
-    SDL_SetRenderDrawColor(mRenderer, 255, 206, 158, 255);
+    SDL_SetRenderDrawColor(m_renderer, 255, 206, 158, 255);
 
-  SDL_RenderFillRect(mRenderer, &destRect);
+  SDL_RenderFillRect(m_renderer, &destRect);
 }
 
-void SDL_Handler::highlightSquare(int x, int y) {
+void SDL_Handler::highlight_cell(int x, int y) {
   SDL_Rect destRect = {x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH};
 
   // Set the draw color with the desired transparency
   // RGBA values, where the last value is alpha (transparency)
-  SDL_SetRenderDrawColor(mRenderer, 10, 10, 10,
+  SDL_SetRenderDrawColor(m_renderer, 10, 10, 10,
                          150); // Adjust the alpha value as needed
 
   // Set the blend mode to blend to enable transparency
-  SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
   // Draw the rectangle with the current draw color
-  SDL_RenderFillRect(mRenderer, &destRect);
-  SDL_RenderPresent(mRenderer);
+  SDL_RenderFillRect(m_renderer, &destRect);
+  SDL_RenderPresent(m_renderer);
 }
-
-void SDL_Handler::presentRenderer() { SDL_RenderPresent(mRenderer); }

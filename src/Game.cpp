@@ -1,40 +1,39 @@
 #include "../include/Game.hpp"
 #include "../include/fen.hpp"
 #include <SDL2/SDL_render.h>
-#include <cctype>
-#include <iostream>
 
 // Bitwise operations for the bitboards
-bool Game::checkBitAtPos(const ull &bitboard, int boardPos) const {
+
+bool Game::check_bit(const ull &bitboard, int boardPos) const {
   return (bitboard & (1ULL << boardPos)) != 0;
 }
 
-void Game::reverseBitAtPos(ull &bitboard, int boardPos) {
+void Game::reverse_bit(ull &bitboard, int boardPos) {
   bitboard ^= (1ULL << boardPos);
 }
 
-void Game::setzeroBitAtPos(ull &bitboard, int boardPos) {
+void Game::clear_bit(ull &bitboard, int boardPos) {
   bitboard &= ~(1ULL << boardPos);
 }
 
-void Game::setoneBitAtPos(ull &bitboard, int boardPos) {
+void Game::set_bit(ull &bitboard, int boardPos) {
   bitboard |= (1ULL << boardPos);
 }
 
-Game::Game(SDL_Handler &handler) : m_handler(&handler) {
+Game::Game() {
   // intialise bitboards
-  bitboards["WhitePawn"] = 0ULL;
-  bitboards["WhiteKnight"] = 0ULL;
-  bitboards["WhiteBishop"] = 0ULL;
-  bitboards["WhiteRook"] = 0ULL;
-  bitboards["WhiteQueen"] = 0ULL;
-  bitboards["WhiteKing"] = 0ULL;
-  bitboards["BlackPawn"] = 0ULL;
-  bitboards["BlackKnight"] = 0ULL;
-  bitboards["BlackBishop"] = 0ULL;
-  bitboards["BlackRook"] = 0ULL;
-  bitboards["BlackQueen"] = 0ULL;
-  bitboards["BlackKing"] = 0ULL;
+  bitboards[WhitePawn] = 0ULL;
+  bitboards[WhiteKnight] = 0ULL;
+  bitboards[WhiteBishop] = 0ULL;
+  bitboards[WhiteRook] = 0ULL;
+  bitboards[WhiteQueen] = 0ULL;
+  bitboards[WhiteKing] = 0ULL;
+  bitboards[BlackPawn] = 0ULL;
+  bitboards[BlackKnight] = 0ULL;
+  bitboards[BlackBishop] = 0ULL;
+  bitboards[BlackRook] = 0ULL;
+  bitboards[BlackQueen] = 0ULL;
+  bitboards[BlackKing] = 0ULL;
 
   white_bitboard = 0ULL;
   black_bitboard = 0ULL;
@@ -43,47 +42,47 @@ Game::Game(SDL_Handler &handler) : m_handler(&handler) {
   FEN startstring;
 
   for (int i = 0; i < 4; i++)
-    castle[i] = startstring.f_board[i];
-  enPassant = startstring.f_enPassant;
-  whiteTurn = startstring.f_whiteTurn;
+    castle[i] = startstring.board[i];
+  en_passant = startstring.en_passant;
+  white_turn = startstring.white_turn;
 
   for (int i = 0; i < 64; i++) {
-    switch (startstring.f_board[i]) {
+    switch (startstring.board[i]) {
     case 'P':
-      setoneBitAtPos(bitboards["WhitePawn"], i);
+      set_bit(bitboards[WhitePawn], i);
       break;
     case 'p':
-      setoneBitAtPos(bitboards["BlackPawn"], i);
+      set_bit(bitboards[BlackPawn], i);
       break;
     case 'R':
-      setoneBitAtPos(bitboards["WhiteRook"], i);
+      set_bit(bitboards[WhiteRook], i);
       break;
     case 'r':
-      setoneBitAtPos(bitboards["BlackRook"], i);
+      set_bit(bitboards[BlackRook], i);
       break;
     case 'N':
-      setoneBitAtPos(bitboards["WhiteKnight"], i);
+      set_bit(bitboards[WhiteKnight], i);
       break;
     case 'n':
-      setoneBitAtPos(bitboards["BlackKnight"], i);
+      set_bit(bitboards[BlackKnight], i);
       break;
     case 'B':
-      setoneBitAtPos(bitboards["WhiteBishop"], i);
+      set_bit(bitboards[WhiteBishop], i);
       break;
     case 'b':
-      setoneBitAtPos(bitboards["BlackBishop"], i);
+      set_bit(bitboards[BlackBishop], i);
       break;
     case 'Q':
-      setoneBitAtPos(bitboards["WhiteQueen"], i);
+      set_bit(bitboards[WhiteQueen], i);
       break;
     case 'q':
-      setoneBitAtPos(bitboards["BlackQueen"], i);
+      set_bit(bitboards[BlackQueen], i);
       break;
     case 'K':
-      setoneBitAtPos(bitboards["WhiteKing"], i);
+      set_bit(bitboards[WhiteKing], i);
       break;
     case 'k':
-      setoneBitAtPos(bitboards["BlackKing"], i);
+      set_bit(bitboards[BlackKing], i);
       break;
     default:
       break;
@@ -92,219 +91,112 @@ Game::Game(SDL_Handler &handler) : m_handler(&handler) {
 
   // render pieces on board
   for (auto &bitboard : bitboards) {
-    if (bitboard.first[0] == 'W')
+    if (bitboard.first < 7) // BlackPawn = 7, everything white < 7
       white_bitboard |= bitboard.second;
     else
       black_bitboard |= bitboard.second;
     for (int i = 0; i < 64; i++) {
-      if (checkBitAtPos(bitboard.second, i))
-        m_handler->renderPiece(bitboard.first, i % 8, i / 8);
+      if (check_bit(bitboard.second, i))
+        SDL_Handler::render_piece(bitboard.first, i % 8, i / 8);
     }
   }
   allineone_bitboard = white_bitboard | black_bitboard;
-  pieceSelected = false;
+  piece_selected = false;
 }
 
-Game::~Game() { m_handler = nullptr; }
-
-void Game::selectPiece(int index) {
+void Game::select_piece(int index) {
   for (auto &bitboard : bitboards) {
-    bool currTurn = bitboard.first[0] == 'W' ? true : false;
-    std::cout << (currTurn ? "white\n" : "black\n");
-    std::cout << bitboard.first << " " << (whiteTurn ? "white\n" : "black\n");
-    if (checkBitAtPos(bitboard.second, index) && currTurn == whiteTurn) {
+    bool currTurn = bitboard.first < 7 ? true : false;
+    if (check_bit(bitboard.second, index) && currTurn == white_turn) {
       selectedPiece = {bitboard.first, index};
-      pieceSelected = true;
+      piece_selected = true;
       break;
     }
   }
-  if (pieceSelected == true) {
-    m_handler->highlightSquare(index % 8, index / 8);
-    highlightLegalMoves();
+  if (piece_selected == true) {
+    SDL_Handler::highlight_cell(index % 8, index / 8);
+    highlight_legal_moves();
   }
 }
 
-void Game::movePiece(int index) {
-  ull legalMoves = getLegalMoves();
-  if (pieceSelected && checkBitAtPos(legalMoves, index)) {
-    setzeroBitAtPos(bitboards[selectedPiece.first], selectedPiece.second);
+void Game::move_piece(int index) {
+  ull legalMoves = get_legal_moves();
+  if (piece_selected && check_bit(legalMoves, index)) {
+    clear_bit(bitboards[selectedPiece.first], selectedPiece.second);
 
     for (auto &bitboard : bitboards) {
-      if (checkBitAtPos(bitboard.second, index))
-        setzeroBitAtPos(bitboard.second, index);
+      if (check_bit(bitboard.second, index))
+        clear_bit(bitboard.second, index);
     }
-    setoneBitAtPos(bitboards[selectedPiece.first], index);
+    set_bit(bitboards[selectedPiece.first], index);
 
     for (int i = 0; i < 64; i++)
-      m_handler->undoPiece(i % 8, i / 8);
+      SDL_Handler::undo_piece(i % 8, i / 8);
 
     for (auto &bitboard : bitboards) {
       for (int i = 0; i < 64; i++) {
-        if (checkBitAtPos(bitboards[bitboard.first], i))
-          m_handler->renderPiece(bitboard.first, i % 8, i / 8);
+        if (check_bit(bitboards[bitboard.first], i))
+          SDL_Handler::render_piece(bitboard.first, i % 8, i / 8);
       }
     }
-    selectedPiece = {"", -1};
-    pieceSelected = false;
-    whiteTurn = !whiteTurn;
+    selectedPiece = {Empty, -1};
+    piece_selected = false;
+    white_turn = !white_turn;
   }
 }
 
-void Game::highlightLegalMoves() {
-  ull legalMovesBoard = getLegalMoves();
+void Game::highlight_legal_moves() {
+  ull legalMovesBoard = get_legal_moves();
   for (int i = 0; i < 64; i++) {
-    if (checkBitAtPos(legalMovesBoard, i)) {
-      m_handler->undoPiece(i % 8, i / 8);
-      m_handler->highlightSquare(i % 8, i / 8);
-      if (checkBitAtPos(allineone_bitboard, i))
+    if (check_bit(legalMovesBoard, i)) {
+      SDL_Handler::undo_piece(i % 8, i / 8);
+      SDL_Handler::highlight_cell(i % 8, i / 8);
+      if (check_bit(allineone_bitboard, i))
         for (auto &bitboard : bitboards) {
-          if (checkBitAtPos(bitboard.second, i))
-            m_handler->renderPiece(bitboard.first, i % 8, i / 8);
+          if (check_bit(bitboard.second, i))
+            SDL_Handler::render_piece(bitboard.first, i % 8, i / 8);
         }
     }
   }
 }
 
-ull Game::getPawnMoves() {
-  ull legalPawnMoves = 0ULL;
-  int direction = whiteTurn ? -1 : 1;
-
-  int moves[3] = {7, 8, 9};
-
-  for (int move : moves) {
-    int arrIndex = selectedPiece.second + move * direction;
-    if (arrIndex < 0 || arrIndex > 63)
-      continue;
-    if (move == 8 && !checkBitAtPos(allineone_bitboard, arrIndex)) {
-      setoneBitAtPos(legalPawnMoves, arrIndex);
-      if (selectedPiece.second / 8 == 1 || selectedPiece.second / 8 == 6)
-        setoneBitAtPos(legalPawnMoves, arrIndex + 8 * direction);
-    }
-    if (move == 7 &&
-        checkBitAtPos(whiteTurn ? black_bitboard : white_bitboard, arrIndex))
-      setoneBitAtPos(legalPawnMoves, arrIndex);
-  }
-  return legalPawnMoves;
-}
-
-ull Game::getKnightMoves() {
-  ull legalKnightMoves = 0ULL;
-  int moves[8] = {-17, -15, -10, -6, 6, 10, 15, 17};
-
-  for (int move : moves) {
-    int arrIndex = selectedPiece.second + move;
-    if (arrIndex >= 0 && arrIndex < 64 &&
-        ((arrIndex % 8) - (selectedPiece.second % 8) >= -2 &&
-         (arrIndex % 8) - (selectedPiece.second % 8) <=
-             2) && // Ensure move stays within board boundaries
-        !checkBitAtPos(whiteTurn ? white_bitboard : black_bitboard, arrIndex)) {
-      setoneBitAtPos(legalKnightMoves, arrIndex);
-    }
-  }
-
-  return legalKnightMoves;
-}
-
-ull Game::getDiagonalMoves() {
-  ull legalDiagonalMoves = 0ULL;
-  int moves[4] = {-9, -7, 7, 9};
-
-  for (int move : moves) {
-    int arrIndex = selectedPiece.second;
-    while (true) {
-      arrIndex += move;
-      if (arrIndex < 0 || arrIndex >= 64 ||
-          ((move == -9 || move == 7) && (arrIndex % 8 == 7)) ||
-          ((move == -7 || move == 9) && (arrIndex % 8 == 0)))
-        break; // Boundary check
-
-      if (checkBitAtPos(whiteTurn ? white_bitboard : black_bitboard, arrIndex))
-        break;
-      setoneBitAtPos(legalDiagonalMoves, arrIndex);
-      if (checkBitAtPos(whiteTurn ? black_bitboard : white_bitboard, arrIndex))
-        break;
-    }
-  }
-
-  return legalDiagonalMoves;
-}
-
-ull Game::getRookMoves() {
-  ull legalRookMoves = 0ULL;
-  int moves[4] = {-8, -1, 1, 8};
-
-  for (int move : moves) {
-    int arrIndex = selectedPiece.second;
-    while (true) {
-      arrIndex += move;
-      if (arrIndex < 0 || arrIndex >= 64 || (move == -1 && arrIndex % 8 == 7) ||
-          (move == 1 && arrIndex % 8 == 0))
-        break; // Boundary check
-
-      if (checkBitAtPos(whiteTurn ? white_bitboard : black_bitboard, arrIndex))
-        break;
-      setoneBitAtPos(legalRookMoves, arrIndex);
-      if (checkBitAtPos(whiteTurn ? black_bitboard : white_bitboard, arrIndex))
-        break;
-    }
-  }
-
-  return legalRookMoves;
-}
-
-ull Game::getKingMoves() {
-  ull legalKingMoves = 0ULL;
-  int moves[8] = {-9, -8, -7, -1, 1, 7, 8, 9};
-
-  for (int move : moves) {
-    int arrIndex = selectedPiece.second + move;
-    if (arrIndex >= 0 && arrIndex < 64 &&
-        ((arrIndex % 8) - (selectedPiece.second % 8) >= -1 &&
-         (arrIndex % 8) - (selectedPiece.second % 8) <=
-             1) && // Ensure move stays within board boundaries
-        !checkBitAtPos(whiteTurn ? white_bitboard : black_bitboard, arrIndex)) {
-      setoneBitAtPos(legalKingMoves, arrIndex);
-    }
-  }
-
-  // Castling (simplified, should be expanded to include checks for castling
-  // rights and conditions)
-  if (whiteTurn && (castle[0] || castle[1])) {
-    if (castle[0] && !(allineone_bitboard & 0b110ULL)) { // White kingside
-      setoneBitAtPos(legalKingMoves, selectedPiece.second + 2);
-    }
-    if (castle[1] && !(allineone_bitboard & 0b1111000ULL)) { // White queenside
-      setoneBitAtPos(legalKingMoves, selectedPiece.second - 2);
-    }
-  } else if (!whiteTurn && (castle[2] || castle[3])) {
-    if (castle[2] &&
-        !(allineone_bitboard & (0b110ULL << 56))) { // Black kingside
-      setoneBitAtPos(legalKingMoves, selectedPiece.second + 2);
-    }
-    if (castle[3] &&
-        !(allineone_bitboard & (0b1111000ULL << 56))) { // Black queenside
-      setoneBitAtPos(legalKingMoves, selectedPiece.second - 2);
-    }
-  }
-
-  return legalKingMoves;
-}
-
-ull Game::getLegalMoves() {
-  switch (toupper(selectedPiece.first[5])) {
-  case 'P':
-    return getPawnMoves();
-  case 'N':
-    return getKnightMoves();
-  case 'B':
-    return getDiagonalMoves();
-  case 'R':
-    return getRookMoves();
-  case 'Q':
-    return getRookMoves() | getDiagonalMoves();
-  case 'K':
-    return getKingMoves();
+ull Game::get_legal_moves() {
+  switch (Game::selectedPiece.first) {
+  case 1:
+  case 7:
+    return get_pawn_moves();
+  case 2:
+  case 8:
+    return get_knight_moves();
+  case 3:
+  case 9:
+    return get_diagonal_moves();
+  case 4:
+  case 10:
+    return get_rook_moves();
+  case 5:
+  case 11:
+    return get_rook_moves() | get_diagonal_moves();
+  case 6:
+  case 12:
+    return get_king_moves();
   default:
     return 0ULL;
   }
 }
+
+ull Game::get_pawn_moves() {
+  ull legal_pawn_moves = 0ULL;
+
+  // int direction = Game::white_turn ? -1 : 1;
+
+  if (check_bit(allineone_bitboard, selectedPiece.first))
+    ;
+
+  return legal_pawn_moves;
+}
+
+ull get_knight_moves() { return 0; }
+ull get_diagonal_moves() { return 0; }
+ull get_rook_moves() { return 0; }
+ull getKingMoves() { return 0; }

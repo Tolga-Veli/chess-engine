@@ -4,42 +4,80 @@
 #include <utility>
 #define ull unsigned long long
 
+/* enum bitboard_strings {
+  Empty = 0,
+  WhitePawn = 1,
+  WhiteKnight,
+  WhiteBishop,
+  WhiteRook,
+  WhiteQueen,
+  WhiteKing,
+  BlackPawn = 7,
+  BlackKnight,
+  BlackBishop,
+  BlackRook,
+  BlackQueen,
+  BlackKing
+}; */
+
 class Game {
 private:
-  SDL_Handler *m_handler;
+  // Holds the bitboards for each piece
+  std::unordered_map<bitboard_strings, ull> bitboards;
 
-  std::unordered_map<std::string, ull> bitboards;
+  // Holds the positions of all white piece
   ull white_bitboard;
+
+  // Holds the positions of all black piece
   ull black_bitboard;
+
+  // Holds the positions of all pieces
   ull allineone_bitboard;
 
-  bool checkBitAtPos(const ull &bitboard, int boardPos) const;
-  void reverseBitAtPos(ull &bitboard, int boardPos);
-  void setzeroBitAtPos(ull &bitboard, int boardPos);
-  void setoneBitAtPos(ull &bitboard, int boardPos);
+  // Does a bitwise operation to check if a bit in _bitboard_ at position
+  // _boardPos_ is 0 or 1
+  bool check_bit(const ull &bitboard, int boardPos) const;
+
+  // Flips the bit in _bitboard_ at pos _boardPos_
+  void reverse_bit(ull &bitboard, int boardPos);
+
+  // Clears the bit in _bitboard_ at pos _boardPos_
+  void clear_bit(ull &bitboard, int boardPos);
+
+  // Sets the bit in _bitboard_ at pos _boardPos_
+  void set_bit(ull &bitboard, int boardPos);
+
+  // Highlights legal moves
+  void highlight_legal_moves();
+
+  // Returns a bitboard of the available moves, where the bit is set - the move
+  // is valid
+  ull get_legal_moves();
+  ull get_pawn_moves();
+  ull get_knight_moves();
+  ull get_diagonal_moves();
+  ull get_rook_moves();
+  ull get_king_moves();
 
 public:
-  bool pieceSelected;
   // K-0, Q-1, k-2, q-3
   // 0 -> 7, 8 -> 15, -1 -> noEnPassant
-  bool castle[4];
-  int enPassant;
-  bool whiteTurn;
+  bool piece_selected = false;
+  bool castle[4] = {false, false, false, false};
+  int en_passant;
+  bool white_turn = true;
+  bool in_check = false;
 
-  std::pair<std::string, int> selectedPiece;
+  // Holds the enum for the selected piece and its index in the bitboards
+  std::pair<bitboard_strings, int> selectedPiece;
 
-  Game(SDL_Handler &handler);
-  ~Game();
+  // Constructor to intialise all bitboards, FEN strings and set the values for
+  // the bitboards;
+  Game();
 
-  void GameLoop();
-  void selectPiece(int index);
-  void movePiece(int index);
-  void highlightLegalMoves();
+  // The logic and gui call for piece selection
+  void select_piece(int index);
 
-  ull getLegalMoves();
-  ull getPawnMoves();
-  ull getKnightMoves();
-  ull getDiagonalMoves();
-  ull getRookMoves();
-  ull getKingMoves();
+  // The logic and gui call for piece movement
+  void move_piece(int index);
 };
